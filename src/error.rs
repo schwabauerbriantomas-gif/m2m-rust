@@ -37,14 +37,34 @@ mod tests {
         let cases = vec![
             (M2MError::IndexNotBuilt, "index has not been built"),
             (M2MError::NoBackends, "no search backends available"),
-            (M2MError::InvalidConfig("bad param".into()), "invalid config: bad param"),
-            (M2MError::StorageError("disk full".into()), "storage error: disk full"),
-            (M2MError::SearchError("timeout".into()), "search error: timeout"),
-            (M2MError::DimensionMismatch { expected: 128, got: 64 }, "dimension mismatch: expected 128, got 64"),
+            (
+                M2MError::InvalidConfig("bad param".into()),
+                "invalid config: bad param",
+            ),
+            (
+                M2MError::StorageError("disk full".into()),
+                "storage error: disk full",
+            ),
+            (
+                M2MError::SearchError("timeout".into()),
+                "search error: timeout",
+            ),
+            (
+                M2MError::DimensionMismatch {
+                    expected: 128,
+                    got: 64,
+                },
+                "dimension mismatch: expected 128, got 64",
+            ),
         ];
         for (err, expected_substring) in cases {
             let msg = format!("{}", err);
-            assert!(msg.contains(expected_substring), "Expected '{}' in '{}'", expected_substring, msg);
+            assert!(
+                msg.contains(expected_substring),
+                "Expected '{}' in '{}'",
+                expected_substring,
+                msg
+            );
         }
     }
 
@@ -56,7 +76,10 @@ mod tests {
 
     #[test]
     fn test_error_debug_format() {
-        let err = M2MError::DimensionMismatch { expected: 64, got: 32 };
+        let err = M2MError::DimensionMismatch {
+            expected: 64,
+            got: 32,
+        };
         let debug = format!("{:?}", err);
         assert!(debug.contains("DimensionMismatch"));
         assert!(debug.contains("expected: 64"));

@@ -210,33 +210,106 @@ pub fn dispatch(cli: Cli) {
     let config = helpers::make_config(cli.dim, cli.max_splats);
 
     match cli.command {
-        Commands::Index { input, shard } => index_cmds::cmd_index(cli.data_dir, cli.backend, config, input, shard),
-        Commands::Search { query, k, format } => search_cmds::cmd_search(cli.data_dir, config, query, k, format),
-        Commands::SearchFile { input, k, format } => search_cmds::cmd_search_file(cli.data_dir, config, input, k, format),
-        Commands::Status { verbose } => data_cmds::cmd_status(cli.data_dir, cli.max_splats, config, verbose),
+        Commands::Index { input, shard } => {
+            index_cmds::cmd_index(cli.data_dir, cli.backend, config, input, shard)
+        }
+        Commands::Search { query, k, format } => {
+            search_cmds::cmd_search(cli.data_dir, config, query, k, format)
+        }
+        Commands::SearchFile { input, k, format } => {
+            search_cmds::cmd_search_file(cli.data_dir, config, input, k, format)
+        }
+        Commands::Status { verbose } => {
+            data_cmds::cmd_status(cli.data_dir, cli.max_splats, config, verbose)
+        }
         Commands::SocCheck => data_cmds::cmd_soc_check(cli.data_dir, config),
         Commands::SocAvalanche { seed } => data_cmds::cmd_soc_avalanche(cli.data_dir, config, seed),
-        Commands::SocRelax { iterations } => data_cmds::cmd_soc_relax(cli.data_dir, config, iterations),
+        Commands::SocRelax { iterations } => {
+            data_cmds::cmd_soc_relax(cli.data_dir, config, iterations)
+        }
         Commands::Save { shard } => data_cmds::cmd_save(cli.data_dir, config, shard),
         Commands::Load { shard } => data_cmds::cmd_load(cli.data_dir, cli.backend, shard),
         Commands::List => data_cmds::cmd_list(cli.data_dir, cli.backend),
-        Commands::DocAdd { id, text, metadata } => data_cmds::cmd_doc_add(cli.data_dir, cli.backend, id, text, metadata),
+        Commands::DocAdd { id, text, metadata } => {
+            data_cmds::cmd_doc_add(cli.data_dir, cli.backend, id, text, metadata)
+        }
         Commands::DocGet { id } => data_cmds::cmd_doc_get(cli.data_dir, cli.backend, id),
         Commands::DocDel { id } => data_cmds::cmd_doc_del(cli.data_dir, cli.backend, id),
         Commands::Backup { output } => data_cmds::cmd_backup(cli.data_dir, cli.backend, output),
-        Commands::QuantIndex { input, bits, algorithm, seed } => data_cmds::cmd_quant_index(input, bits, algorithm, seed),
-        Commands::QuantSearch { query, top_k } => search_cmds::cmd_quant_search(cli.data_dir, cli.backend, cli.dim, query, top_k),
+        Commands::QuantIndex {
+            input,
+            bits,
+            algorithm,
+            seed,
+        } => data_cmds::cmd_quant_index(input, bits, algorithm, seed),
+        Commands::QuantSearch { query, top_k } => {
+            search_cmds::cmd_quant_search(cli.data_dir, cli.backend, cli.dim, query, top_k)
+        }
         Commands::QuantStatus => data_cmds::cmd_quant_status(cli.dim),
         Commands::GpuInfo => data_cmds::cmd_gpu_info(),
-        Commands::BenchGpu { n_vectors, dim, n_queries, top_k, metric } => index_cmds::cmd_bench_gpu(n_vectors, dim, n_queries, top_k, metric),
-        Commands::Ingest { input, n_clusters, seed } => index_cmds::cmd_ingest(config, input, n_clusters, seed),
-        Commands::IngestHierarchical { input, n_clusters, min_cluster_size, seed } => index_cmds::cmd_ingest_hierarchical(config, input, n_clusters, min_cluster_size, seed),
-        Commands::IngestLeader { input, target_clusters, threshold, seed } => index_cmds::cmd_ingest_leader(cli.data_dir, cli.backend, config, input, target_clusters, threshold, seed),
-        Commands::FusedSearch { query, query_file, k } => search_cmds::cmd_fused_search(cli.data_dir, config, query, query_file, k),
+        Commands::BenchGpu {
+            n_vectors,
+            dim,
+            n_queries,
+            top_k,
+            metric,
+        } => index_cmds::cmd_bench_gpu(n_vectors, dim, n_queries, top_k, metric),
+        Commands::Ingest {
+            input,
+            n_clusters,
+            seed,
+        } => index_cmds::cmd_ingest(config, input, n_clusters, seed),
+        Commands::IngestHierarchical {
+            input,
+            n_clusters,
+            min_cluster_size,
+            seed,
+        } => index_cmds::cmd_ingest_hierarchical(config, input, n_clusters, min_cluster_size, seed),
+        Commands::IngestLeader {
+            input,
+            target_clusters,
+            threshold,
+            seed,
+        } => index_cmds::cmd_ingest_leader(
+            cli.data_dir,
+            cli.backend,
+            config,
+            input,
+            target_clusters,
+            threshold,
+            seed,
+        ),
+        Commands::FusedSearch {
+            query,
+            query_file,
+            k,
+        } => search_cmds::cmd_fused_search(cli.data_dir, config, query, query_file, k),
         Commands::PresetInfo { preset } => data_cmds::cmd_preset_info(preset),
-        Commands::HnswSearch { query, query_file, k } => search_cmds::cmd_hnsw_search(cli.data_dir, cli.dim, cli.max_splats, query, query_file, k),
-        Commands::LshSearch { query, query_file, k } => search_cmds::cmd_lsh_search(cli.data_dir, cli.dim, cli.max_splats, query, query_file, k),
-        Commands::BenchGpuIngest { n_vectors, dim, n_clusters, n_queries } => index_cmds::cmd_bench_gpu_ingest(n_vectors, dim, n_clusters, n_queries),
+        Commands::HnswSearch {
+            query,
+            query_file,
+            k,
+        } => search_cmds::cmd_hnsw_search(
+            cli.data_dir,
+            cli.dim,
+            cli.max_splats,
+            query,
+            query_file,
+            k,
+        ),
+        Commands::LshSearch {
+            query,
+            query_file,
+            k,
+        } => {
+            search_cmds::cmd_lsh_search(cli.data_dir, cli.dim, cli.max_splats, query, query_file, k)
+        }
+        Commands::BenchGpuIngest {
+            n_vectors,
+            dim,
+            n_clusters,
+            n_queries,
+        } => index_cmds::cmd_bench_gpu_ingest(n_vectors, dim, n_clusters, n_queries),
         Commands::Serve { port } => data_cmds::cmd_serve(port),
     }
 }

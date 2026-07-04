@@ -126,10 +126,16 @@ impl WriteAheadLog {
         let mut inner = self.inner.lock().expect("wal lock poisoned");
         // Close current file
         inner.file.flush()?;
-        drop(std::mem::replace(&mut inner.file, BufWriter::new(File::open("/dev/null")?)));
+        drop(std::mem::replace(
+            &mut inner.file,
+            BufWriter::new(File::open("/dev/null")?),
+        ));
 
         // Rewrite with remaining entries
-        let file = OpenOptions::new().write(true).truncate(true).open(&self.path)?;
+        let file = OpenOptions::new()
+            .write(true)
+            .truncate(true)
+            .open(&self.path)?;
         let mut writer = BufWriter::new(file);
         for entry in remaining {
             let serialized = serde_json::to_vec(entry)?;

@@ -2,8 +2,8 @@
 //!
 //! Convenience constructors for common deployment scenarios.
 
-use super::types::*;
 use super::detect_device;
+use super::types::*;
 use super::M2MConfig;
 
 impl M2MConfig {
