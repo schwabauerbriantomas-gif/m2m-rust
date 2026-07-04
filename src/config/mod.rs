@@ -454,7 +454,10 @@ mod tests {
         assert_eq!(config.knn_k, 256);
     }
 
-    /// Validate each preset can create a SplatStore and run add_splat + find_neighbors
+    /// Validate each preset can create a SplatStore and run add_splat + find_neighbors.
+    ///
+    /// NOTE: Uses small max_splats overrides because presets like `distributed`
+    /// set max_splats=10M which pre-allocates 25.6 GB in SplatStore::new().
     #[test]
     fn test_all_presets_runtime() {
         use crate::splats::SplatStore;
@@ -475,6 +478,10 @@ mod tests {
             config.enable_cuda = false;
             config.enable_vulkan = false;
             config.enable_gpu_search = false;
+            // Cap max_splats to avoid pre-allocating multi-GB arrays in CI
+            // (distributed preset sets max_splats=10M → 25.6 GB at dim=640)
+            config.max_splats = 100;
+            config.n_splats_init = config.n_splats_init.min(50);
             config.finalize();
 
             let mut store = SplatStore::new(config);
@@ -698,12 +705,15 @@ mod tests {
 
     // ─── Subsystem initialization tests per preset ───
 
-    /// Helper: create a store with CPU-forced config from a preset
+    /// Helper: create a store with CPU-forced config from a preset.
+    /// Caps max_splats to avoid pre-allocating multi-GB arrays in CI.
     fn store_from_preset(mut config: M2MConfig) -> crate::splats::SplatStore {
         config.device = "cpu".to_string();
         config.enable_cuda = false;
         config.enable_vulkan = false;
         config.enable_gpu_search = false;
+        config.max_splats = 100;
+        config.n_splats_init = config.n_splats_init.min(50);
         config.finalize();
         crate::splats::SplatStore::new(config)
     }
