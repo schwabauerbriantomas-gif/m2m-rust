@@ -171,8 +171,7 @@ All tests passing with 0 warnings.
 # CPU benchmark
 cargo run --release -- bench-gpu -n 100000 -d 640 -q 100 -k 10 -m l2
 
-# GPU benchmark (requires CUDA Toolkit + MSVC)
-$env:CUDA_PATH = "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.4"
+# GPU benchmark (requires CUDA Toolkit)
 cargo run --release --features cuda -- bench-gpu -n 100000 -d 640 -q 100 -k 10 -m l2
 
 # GPU + Transformer pipeline benchmark

@@ -2,8 +2,9 @@
 name = "m2m-vector-search"
 version = "2.1.0"
 edition = "2021"
-description = "M2M Vector Search - Native Rust implementation"
+description = "M2M Vector Search - Native Rust implementation with CUDA GPU acceleration"
 license = "AGPL-3.0"
+readme = "README.md"
 
 [features]
 default = []
