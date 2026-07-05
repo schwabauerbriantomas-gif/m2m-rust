@@ -2,11 +2,11 @@
 
 <div align="center">
 
-**Native Rust implementation of M2M Vector Search — GPU-accelerated with custom CUDA kernels.**
+**Native Rust port of M2M Vector Search — HRM2 hierarchical retrieval, HNSW, and quantization.**
 
+[![CI](https://github.com/schwabauerbriantomas-gif/m2m-rust/actions/workflows/ci.yml/badge.svg)](https://github.com/schwabauerbriantomas-gif/m2m-rust/actions/workflows/ci.yml)
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
 [![Rust 2021](https://img.shields.io/badge/rust-2021-orange.svg)](https://www.rust-lang.org/)
-[![Tests: 226](https://img.shields.io/badge/tests-226%20passing-brightgreen.svg)]()
 
 </div>
 
@@ -15,16 +15,21 @@
 ## Overview
 
 Native Rust port of [m2m-vector-search](https://github.com/schwabauerbriantomas-gif/m2m-vector-search),
-the Python vector search engine. This implementation provides:
+the Python vector search engine. Written in ~23K lines of Rust with ndarray + rayon.
 
-- **20K+ lines** of pure Rust + CUDA C
-- **5 custom CUDA kernels** (L2, cosine, batch, top-k variants)
-- **HRM2 hierarchical retrieval** — two-level KMeans clustering
-- **HNSW** incremental indexing for 640x speedup over linear scan
+**Features:**
+
+- **HRM2 hierarchical retrieval** — two-level KMeans clustering with IVF-style candidate pruning
+- **HNSW** incremental indexing for approximate nearest neighbor search
 - **Quantization** — TurboQuant (4/8-bit) and PolarQuant (3-bit)
 - **Knowledge graph** with entity extraction and relation mapping
-- **Distributed sharding** — cluster protocol with energy-aware routing
-- **226 tests** passing with 0 warnings
+- **Storage** — SQLite, JSON, WAL persistence
+- **HTTP API** (axum) with API key auth
+- **259 unit tests** passing
+
+> **Note on GPU:** CUDA support is stubbed via `cudarc` bindings but no native CUDA kernels
+> are implemented yet. GPU code paths fall back to CPU. The `--features cuda` flag compiles
+> but does not activate GPU compute.
 
 ## Architecture
 
@@ -40,42 +45,12 @@ src/
 ├── encoding.rs            — Embedding builders and encoders
 ├── hnsw_index.rs          — HNSW incremental indexing
 ├── graph_splat.rs         — Knowledge graph traversal
-├── gpu/                   — CUDA kernel wrappers (cudarc)
+├── gpu/                   — CUDA wrappers (cudarc) — stub, CPU fallback
 ├── quant/                 — TurboQuant, PolarQuant, QJL
 ├── cluster/               — Distributed sharding + routing
 ├── storage/               — SQLite, JSON, WAL persistence
 └── api_server.rs          — HTTP API (axum) with API key auth
 ```
-
-## Performance
-
-All benchmarks measured on **2026-03-29**. Hardware: AMD Ryzen 5 3400G (4c/8t), 32GB DDR4, NVIDIA RTX 3090 (24GB VRAM, sm_86, CUDA 12.4).
-
-### GPU Search (persistent VRAM)
-
-| Vectors | Dim | CPU QPS | GPU QPS | Speedup |
-|---------|-----|---------|---------|---------|
-| 10K | 640 | 269 | 1,667 | **6.2x** |
-| 100K | 640 | 214 | 1,667 | **7.8x** |
-
-GPU query time is constant regardless of dataset size (VRAM-resident, compute-bound).
-
-### HNSW vs Linear Scan
-
-| Method | 10K | 100K | Recall@10 |
-|--------|-----|------|-----------|
-| Linear | 269 QPS | 214 QPS | 100% |
-| HNSW | 314K QPS | 137K QPS | >99.5% |
-| **Speedup** | **1,170x** | **640x** | — |
-
-### DatasetTransformer Pipeline
-
-100K × 640D vectors → 100 Gaussian splats (1,000:1 compression):
-- One-time ingest: 2.1 min (KMeans dominates)
-- Search: 20,000 QPS over 100 splats (50µs/query)
-- 12x faster queries than GPU raw search
-
-See [BENCHMARKS.md](BENCHMARKS.md) for full details.
 
 ## Build
 
@@ -83,26 +58,28 @@ See [BENCHMARKS.md](BENCHMARKS.md) for full details.
 # CPU-only (no GPU required)
 cargo build --release
 
-# With CUDA support (requires CUDA Toolkit 12.x)
+# With CUDA feature flag (stubs, falls back to CPU)
 cargo build --release --features cuda
 ```
 
 ## Test
 
 ```bash
-cargo test --lib          # 226 tests, CPU-only
-cargo test --lib --features cuda   # same tests, GPU modules available
+cargo test --lib    # 259 tests, CPU-only
 ```
 
 ## Relationship to Python version
 
 | | m2m-vector-search (Python) | m2m-rust (this repo) |
 |---|---|---|
-| Language | Python + NumPy | Rust + ndarray |
-| GPU | Vulkan | CUDA (custom kernels) |
-| Backend | CPU/Vulkan/CUDA | CPU/CUDA |
-| Speed | Baseline | ~10-50x faster (compiled) |
-| Status | Production | Native port |
+| Language | Python + NumPy/Numba | Rust + ndarray/rayon |
+| GPU | Vulkan + CUDA (PyTorch) | Stub (cudarc, not implemented) |
+| Backend | CPU/Vulkan/CUDA | CPU only |
+| Status | v2.3.0 — production | v2.1.0 — native port |
+| Successor | — | **[splatdb](https://github.com/schwabauerbriantomas-gif/splatdb)** (active development) |
+
+> **This repo is superseded by [splatdb](https://github.com/schwabauerbriantomas-gif/splatdb)**
+> for production Rust vector search with real CUDA kernels, HNSW, and quantization.
 
 ## License
 
